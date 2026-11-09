@@ -1,0 +1,104 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.types {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.typeOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.typeOption {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 22px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.typeOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.typeOption:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.typeSelected {
+  background: var(--color-primary-soft);
+  border: 2px solid var(--color-primary);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 150px;
+  gap: 20px;
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -8px;
+}
+
+.preset {
+  min-height: 36px;
+  padding: 0 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preset:hover {
+  border-color: var(--color-border-strong);
+}
+
+.select {
+  appearance: none;
+  padding-right: 36px !important;
+  background: var(--color-surface) url('../../assets/chevron-down.svg') no-repeat right 10px center / 19px 19px !important;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.actionsEnd {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

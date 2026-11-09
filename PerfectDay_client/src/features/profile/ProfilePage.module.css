@@ -1,0 +1,83 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 760px;
+}
+
+.step {
+  gap: 20px;
+}
+
+.birthDate {
+  max-width: 320px;
+}
+
+.chronotypes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.chronotype {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+}
+
+.chronotype input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chronotype:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.chronotypeSelected {
+  background: var(--color-primary-soft);
+  border: 2px solid var(--color-primary);
+  padding: 19px;
+}
+
+.chronotypeTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.hours > * {
+  flex: 0 1 214px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.saved {
+  flex: 1 1 240px;
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .chronotypes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

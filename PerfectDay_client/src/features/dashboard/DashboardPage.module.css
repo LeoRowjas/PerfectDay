@@ -1,0 +1,157 @@
+.cycles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cycle {
+  gap: 8px;
+}
+
+.cycleHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cycleDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.cycleName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.critical {
+  padding: 2px 8px;
+  background: var(--color-warning-soft);
+  border-radius: 10px;
+  color: var(--color-warning);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cycleValue {
+  font-size: 40px;
+  font-weight: 800;
+}
+
+.cycleValueEmpty {
+  color: var(--color-faint);
+}
+
+.grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.chartHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.recommendationsCard {
+  flex: 1;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.planItem {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.planDone {
+  color: var(--color-faint);
+  text-decoration: line-through;
+}
+
+.planTime {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.planTitle {
+  overflow-wrap: anywhere;
+}
+
+.planLink {
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recommendation {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  background: var(--color-bg);
+  border-radius: 12px;
+}
+
+.recommendationHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.recommendationTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.recommendationTime {
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .cycles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

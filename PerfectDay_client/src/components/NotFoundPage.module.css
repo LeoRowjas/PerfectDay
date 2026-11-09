@@ -1,0 +1,21 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 100dvh;
+  padding: 24px 16px;
+  background: var(--color-sidebar);
+  color: #fff;
+  text-align: center;
+}
+
+.page p {
+  color: var(--color-sidebar-text);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}

@@ -1,0 +1,263 @@
+.dateBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.notice {
+  padding: 12px 14px;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-control);
+  font-size: 14px;
+}
+
+.notice a {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.why {
+  min-height: 420px;
+}
+
+.timeline {
+  position: relative;
+}
+
+.hour {
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.hourLabel {
+  color: var(--color-muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.blocks {
+  position: absolute;
+  inset: 0 0 0 64px;
+}
+
+.block {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  padding: 4px 12px;
+  background: var(--color-bg);
+  border: 0;
+  border-left: 4px solid var(--color-border-strong);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.block:hover {
+  filter: brightness(0.97);
+}
+
+.blockCompact {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 0;
+}
+
+.blockDraggable {
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.blockDragging {
+  z-index: 2;
+  cursor: grabbing;
+  box-shadow: 0 8px 20px rgba(20, 27, 52, 0.25);
+}
+
+.blockDone {
+  opacity: 0.55;
+}
+
+.blockDone .blockTitle {
+  text-decoration: line-through;
+}
+
+.offHours {
+  position: absolute;
+  right: 0;
+  left: 0;
+  background: rgba(20, 27, 52, 0.04);
+  pointer-events: none;
+}
+
+.now {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: 2px;
+  background: var(--color-danger);
+  pointer-events: none;
+}
+
+.now::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-danger);
+  border-radius: 4px;
+}
+
+.blockSelected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.intellectual {
+  background: #eef2ff;
+  border-left-color: var(--type-intellectual);
+}
+
+.physical {
+  background: #fdf0ea;
+  border-left-color: var(--type-physical);
+}
+
+.creative {
+  background: #e6f4f2;
+  border-left-color: var(--type-creative);
+}
+
+.routine {
+  background: #eff0f4;
+  border-left-color: var(--type-routine);
+}
+
+.break {
+  background: repeating-linear-gradient(135deg, #f5f6fa, #f5f6fa 8px, #eceef5 8px, #eceef5 16px);
+}
+
+.blockTitle {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blockTime {
+  color: var(--color-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detailsTitle {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.detailsTime {
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.explanation {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.detailsActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.linkButton {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.moveForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.moveField {
+  flex: 1 1 130px;
+}
+
+.unplaced {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unplacedTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.unplacedList {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .why {
+    min-height: 240px;
+  }
+}

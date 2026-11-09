@@ -1,0 +1,31 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.info {
+  background: var(--color-primary-soft);
+  color: var(--color-ink);
+}
+
+.warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.critical {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-weight: 600;
+}
