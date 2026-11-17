@@ -1,0 +1,280 @@
+.bellRoot {
+  position: relative;
+}
+
+.bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-control);
+  color: var(--color-primary-dark);
+}
+
+.bell:hover {
+  background: var(--color-primary-soft);
+}
+
+.count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--color-danger);
+  border: 2px solid var(--color-bg);
+  border-radius: 9px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 14px;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(640px, calc(100dvh - 120px));
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-popover);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 4px 12px;
+  padding: 12px 28px 12px 12px;
+  border-radius: 12px;
+}
+
+.unread {
+  background: var(--color-primary-soft);
+}
+
+.itemIcon {
+  display: inline-flex;
+  grid-row: span 2;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.planReady {
+  color: var(--color-warning);
+}
+
+.taskStart {
+  color: var(--color-primary);
+}
+
+.breakSoon {
+  color: var(--color-success);
+}
+
+.criticalTomorrow {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.itemTime {
+  color: var(--color-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemText {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.itemLink {
+  grid-column: 2;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dot {
+  position: absolute;
+  top: 18px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+}
+
+.empty {
+  padding: 16px;
+  background: var(--color-bg);
+  border-radius: 12px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.settingsTitle {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hint {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  gap: 12px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 16px;
+  background: var(--color-toast);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-popover);
+  color: #fff;
+}
+
+.toastIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-sidebar-active);
+  border-radius: 10px;
+}
+
+.toastBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.toastText {
+  color: var(--color-sidebar-text);
+  font-size: 13px;
+}
+
+.toastActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.toastPrimary,
+.toastSecondary {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.toastPrimary {
+  background: #fff;
+  border: 0;
+  color: var(--color-ink);
+}
+
+.toastSecondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.toastClose {
+  align-self: flex-start;
+  padding: 4px;
+  background: none;
+  border: 0;
+  color: var(--color-sidebar-text);
+}
+
+@media (max-width: 768px) {
+  .toast {
+    right: 16px;
+    bottom: 84px;
+  }
+
+  .panel {
+    position: fixed;
+    top: 72px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}

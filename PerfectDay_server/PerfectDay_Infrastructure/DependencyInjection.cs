@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PerfectDay_Application.Abstractions;
+using PerfectDay_Infrastructure.Calendars;
+using PerfectDay_Infrastructure.ExternalAuth;
 using PerfectDay_Infrastructure.Persistence;
 using PerfectDay_Infrastructure.Security;
 
@@ -18,7 +20,24 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<INotificationReadRepository, NotificationReadRepository>();
+        services.AddScoped<ICalendarRepository, CalendarRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        var calendars = configuration.GetSection(CalendarOptions.SectionName).Get<CalendarOptions>() ?? new CalendarOptions();
+        services.AddHttpClient(IcalFeedReader.ClientName, client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(15);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("PerfectDay/1.0 (+calendar import)");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => IcalFeedReader.CreateHandler(calendars.AllowPrivateNetworks));
+        services.AddScoped<ICalendarFeedReader, IcalFeedReader>();
+
+        services.Configure<ExternalAuthOptions>(configuration.GetSection(ExternalAuthOptions.SectionName));
+        services.AddHttpClient(OAuthProvider.ClientName, client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<IExternalAuthProvider, YandexAuthProvider>();
+        services.AddScoped<IExternalAuthProvider, VkAuthProvider>();
+        services.AddScoped<IExternalAuthProvider, GoogleAuthProvider>();
 
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))

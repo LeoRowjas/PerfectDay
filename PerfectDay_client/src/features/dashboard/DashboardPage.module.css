@@ -1,3 +1,36 @@
+.headerMeta {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-card);
+  color: var(--color-warning-ink);
+  font-size: 14px;
+}
+
+.bannerIcon {
+  color: var(--color-warning);
+}
+
+.bannerText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bannerTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
 .cycles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -5,20 +38,25 @@
 }
 
 .cycle {
-  gap: 8px;
+  gap: 6px;
 }
 
 .cycleHeader {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
+.cycleHeader > :last-child:not(.cycleName) {
+  margin-left: auto;
+}
+
 .cycleDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 6px;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
 }
 
 .cycleName {
@@ -26,29 +64,41 @@
   font-weight: 700;
 }
 
-.critical {
-  padding: 2px 8px;
-  background: var(--color-warning-soft);
-  border-radius: 10px;
-  color: var(--color-warning);
-  font-size: 12px;
-  font-weight: 700;
+.cycleMeta {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.cycleValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .cycleValue {
-  font-size: 40px;
+  font-size: 36px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .cycleValueEmpty {
   color: var(--color-faint);
 }
 
+.cycleTrend {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
 .grid {
   display: grid;
   flex: 1;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
   gap: 20px;
+}
+
+.chartCard {
+  gap: 14px;
 }
 
 .chartHeader {
@@ -66,82 +116,175 @@
   min-width: 0;
 }
 
-.recommendationsCard {
+.sideCard {
   flex: 1;
 }
 
-.plan {
+.sideAction {
+  margin-top: auto;
+}
+
+.sideSubtitle {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.energyList,
+.hours,
+.recommendations,
+.advice,
+.dates {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.planItem {
+.energyRow {
   display: flex;
-  gap: 12px;
-  font-size: 14px;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.planDone {
-  color: var(--color-faint);
-  text-decoration: line-through;
+.energyLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
 }
 
-.planTime {
-  flex-shrink: 0;
+.energyLabel strong {
+  margin-left: auto;
+}
+
+.hours li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.hoursTime {
+  min-width: 92px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.planTitle {
-  overflow-wrap: anywhere;
+.hoursActivity {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-muted);
 }
 
-.planLink {
-  color: var(--color-primary-dark);
-  font-size: 14px;
-  font-weight: 700;
+.hoursEnergy {
+  white-space: nowrap;
 }
 
-.recommendations {
+.shortName {
+  display: none;
+}
+
+.tip {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 6px;
+  margin-top: auto;
+  padding: 14px;
+  background: var(--color-primary-soft);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tipTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary-dark);
+  font-weight: 700;
 }
 
 .recommendation {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px;
+  gap: 4px;
+  padding: 12px 14px;
   background: var(--color-bg);
   border-radius: 12px;
-}
-
-.recommendationHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.recommendationTitle {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 13px;
 }
 
 .recommendationTime {
-  color: var(--color-primary-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.recommendationTitle {
   font-size: 14px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+}
+
+.advice li {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.adviceIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-warning-soft);
+  border-radius: 8px;
+  color: var(--color-warning);
+}
+
+.datesGroup {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dates li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 10px;
+  border-left: 3px solid;
+  font-size: 13px;
+}
+
+.dates li > span {
+  color: var(--color-muted);
+}
+
+.dateButton {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.dateButton span {
+  color: var(--color-muted);
+}
+
+.dateButton:hover strong {
+  color: var(--color-primary-dark);
 }
 
 @media (max-width: 1200px) {
@@ -150,8 +293,45 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .cycles {
-    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .cycle {
+    padding: 12px;
+  }
+
+  .cycleName {
+    font-size: 12px;
+  }
+
+  .fullName {
+    display: none;
+  }
+
+  .shortName {
+    display: inline;
+  }
+
+  .cycleHeader > :last-child:not(.cycleName),
+  .cycleMeta,
+  .cycleTrend,
+  .headerMeta {
+    display: none;
+  }
+
+  .cycleValue {
+    font-size: 22px;
+  }
+
+  .cycleValueRow {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

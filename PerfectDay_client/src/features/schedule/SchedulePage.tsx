@@ -1,332 +1,137 @@
-import { useEffect, useRef, useState } from 'react'
-import type { PointerEvent } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useMoveBlock, usePlannedSchedule, useSetTaskCompleted, useTasks, useUnpinBlock } from '../../api/queries'
-import type { Schedule, ScheduleBlock, Task } from '../../api/types'
-import { Button, Card, EmptyState, Field, FormError, Loading, PageHeader } from '../../components/ui'
+import {
+  useAddBreak,
+  useBackgroundCalendarSync,
+  useMoveBlock,
+  usePlannedSchedule,
+  useSetLightened,
+  useSetTaskCompleted,
+  useTasks,
+} from '../../api/queries'
+import type { ScheduleBlock, Task } from '../../api/types'
+import { NotificationBell } from '../../components/NotificationCenter'
+import { Button, Card, FormError, Icon, Loading, PageHeader } from '../../components/ui'
 import uiStyles from '../../components/ui.module.css'
-import { WarningList } from '../../components/WarningList'
-import { addDays, formatDate, formatLongDate, isIsoDate, minutesToTime, timeToMinutes, todayIso } from '../../lib/date'
+import { addDays, formatRelativeDay, formatWeekdayDate, isIsoDate, todayIso } from '../../lib/date'
 import { formatDuration } from '../../lib/duration'
+import { pluralize, TASK_TYPES, taskTypeColor, taskTypeLabel } from '../../lib/labels'
+import { MOBILE_QUERY, useMediaQuery } from '../../lib/useMediaQuery'
 import { TaskFormModal } from '../tasks/TaskFormModal'
+import { MobileDay } from './MobileDay'
+import { taskStats } from './scheduleUtils'
+import type { MoveDraft } from './scheduleUtils'
+import { BlockDetails, LoadCard, MovePanel, UnplacedCard, WhyEmpty } from './SidePanels'
+import { Timeline } from './Timeline'
 import styles from './SchedulePage.module.css'
-
-const HOUR_HEIGHT = 64
-const MIN_BLOCK_HEIGHT = 30
-const COMPACT_BLOCK_MINUTES = 50
-const DEFAULT_FIRST_HOUR = 8
-const DEFAULT_LAST_HOUR = 19
-const SNAP_MINUTES = 15
-const DRAG_THRESHOLD_PX = 4
-const CLOCK_TICK_MS = 60_000
-
-const toPixels = (minutes: number) => (minutes / 60) * HOUR_HEIGHT
-
-function blockTitle(block: ScheduleBlock): string {
-  return block.partsTotal > 1 ? `${block.title} · часть ${block.part} из ${block.partsTotal}` : block.title
-}
-
-function useCurrentMinutes(): number {
-  const read = () => {
-    const now = new Date()
-    return now.getHours() * 60 + now.getMinutes()
-  }
-  const [minutes, setMinutes] = useState(read)
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setMinutes(read()), CLOCK_TICK_MS)
-    return () => window.clearInterval(timer)
-  }, [])
-
-  return minutes
-}
-
-interface DragState {
-  id: string
-  pointerStartY: number
-  originMinutes: number
-  minutes: number
-  moved: boolean
-}
-
-function Timeline({
-  schedule,
-  selectedId,
-  isToday,
-  isEditable,
-  isBusy,
-  onSelect,
-  onMove,
-}: {
-  schedule: Schedule
-  selectedId: string | null
-  isToday: boolean
-  isEditable: boolean
-  isBusy: boolean
-  onSelect: (id: string) => void
-  onMove: (blockId: string, start: string) => void
-}) {
-  const workStart = timeToMinutes(schedule.workdayStart)
-  const workEnd = timeToMinutes(schedule.workdayEnd)
-  const firstHour = Math.min(DEFAULT_FIRST_HOUR, Math.floor(workStart / 60))
-  const lastHour = Math.max(DEFAULT_LAST_HOUR, Math.ceil(workEnd / 60))
-  const hours = Array.from({ length: lastHour - firstHour + 1 }, (_, index) => firstHour + index)
-  const dayOffset = firstHour * 60
-  const dayEnd = (lastHour + 1) * 60
-
-  const now = useCurrentMinutes()
-  const [drag, setDrag] = useState<DragState | null>(null)
-  const suppressClick = useRef(false)
-
-  const startDrag = (event: PointerEvent<HTMLButtonElement>, block: ScheduleBlock) => {
-    // На сенсорных экранах жест остаётся прокруткой, там блок переносят через панель справа.
-    // Пока идёт перестройка дня, у блоков меняются идентификаторы: перенос старого блока вернул бы 404.
-    if (!isEditable || isBusy || block.isCompleted || event.pointerType !== 'mouse' || event.button !== 0) return
-    event.currentTarget.setPointerCapture(event.pointerId)
-    const minutes = timeToMinutes(block.start)
-    setDrag({ id: block.id, pointerStartY: event.clientY, originMinutes: minutes, minutes, moved: false })
-  }
-
-  const continueDrag = (event: PointerEvent<HTMLButtonElement>, duration: number) => {
-    if (!drag) return
-    const offset = event.clientY - drag.pointerStartY
-    if (!drag.moved && Math.abs(offset) < DRAG_THRESHOLD_PX) return
-
-    const raw = drag.originMinutes + (offset / HOUR_HEIGHT) * 60
-    const snapped = Math.round(raw / SNAP_MINUTES) * SNAP_MINUTES
-    const minutes = Math.min(Math.max(snapped, workStart), workEnd - duration)
-    setDrag({ ...drag, minutes, moved: true })
-  }
-
-  const finishDrag = () => {
-    if (!drag) return
-    if (drag.moved) {
-      suppressClick.current = true
-      onSelect(drag.id)
-      if (drag.minutes !== drag.originMinutes) onMove(drag.id, minutesToTime(drag.minutes))
-    }
-    setDrag(null)
-  }
-
-  return (
-    <div className={styles.timeline}>
-      {hours.map((hour) => (
-        <div key={hour} className={styles.hour} style={{ height: HOUR_HEIGHT }}>
-          <span className={styles.hourLabel}>{String(hour).padStart(2, '0')}:00</span>
-        </div>
-      ))}
-      <div className={styles.blocks}>
-        <div className={styles.offHours} style={{ top: 0, height: toPixels(workStart - dayOffset) }} />
-        <div className={styles.offHours} style={{ top: toPixels(workEnd - dayOffset), height: toPixels(dayEnd - workEnd) }} />
-
-        {schedule.blocks.map((block) => {
-          const start = timeToMinutes(block.start)
-          const duration = timeToMinutes(block.end) - start
-          const isDragged = drag?.id === block.id && drag.moved
-          const shownStart = isDragged ? drag.minutes : start
-          const typeClass = block.taskType ? styles[block.taskType] : styles.break
-          const classes = [
-            styles.block,
-            typeClass,
-            duration < COMPACT_BLOCK_MINUTES ? styles.blockCompact : '',
-            selectedId === block.id ? styles.blockSelected : '',
-            isDragged ? styles.blockDragging : '',
-            block.isCompleted ? styles.blockDone : '',
-            isEditable && !block.isCompleted ? styles.blockDraggable : '',
-          ]
-
-          return (
-            <button
-              key={block.id}
-              type="button"
-              aria-pressed={selectedId === block.id}
-              className={classes.join(' ')}
-              style={{
-                top: toPixels(shownStart - dayOffset),
-                height: Math.max(toPixels(duration) - 2, MIN_BLOCK_HEIGHT),
-              }}
-              onPointerDown={(event) => startDrag(event, block)}
-              onPointerMove={(event) => continueDrag(event, duration)}
-              onPointerUp={finishDrag}
-              onPointerCancel={() => setDrag(null)}
-              onClick={() => {
-                if (suppressClick.current) {
-                  suppressClick.current = false
-                  return
-                }
-                onSelect(block.id)
-              }}
-            >
-              <span className={styles.blockTitle}>{blockTitle(block)}</span>
-              <span className={styles.blockTime}>
-                {minutesToTime(shownStart)}–{minutesToTime(shownStart + duration)}
-                {block.isPinned && ' · закреплено'}
-                {block.isCompleted && ' · выполнено'}
-              </span>
-            </button>
-          )
-        })}
-
-        {isToday && now >= dayOffset && now < dayEnd && (
-          <div className={styles.now} style={{ top: toPixels(now - dayOffset) }} aria-label={`Сейчас ${minutesToTime(now)}`} />
-        )}
-      </div>
-    </div>
-  )
-}
-
-function BlockDetails({
-  block,
-  date,
-  isEditable,
-  isMoving,
-  moveError,
-  onMove,
-  onEditTask,
-}: {
-  block: ScheduleBlock
-  date: string
-  isEditable: boolean
-  isMoving: boolean
-  moveError?: string
-  onMove: (start: string) => void
-  onEditTask?: () => void
-}) {
-  const unpin = useUnpinBlock()
-  const setCompleted = useSetTaskCompleted()
-  const [start, setStart] = useState(block.start)
-
-  return (
-    <div className={styles.details}>
-      <h3 className={styles.detailsTitle}>{blockTitle(block)}</h3>
-      <p className={styles.detailsTime}>
-        {block.start}–{block.end}
-      </p>
-      <p className={styles.explanation}>{block.explanation}</p>
-
-      {block.taskId && (
-        <div className={styles.detailsActions}>
-          <Button
-            variant={block.isCompleted ? 'outline' : 'primary'}
-            disabled={setCompleted.isPending}
-            onClick={() => setCompleted.mutate({ id: block.taskId!, isCompleted: !block.isCompleted })}
-          >
-            {block.isCompleted ? 'Вернуть в работу' : 'Выполнено'}
-          </Button>
-          {onEditTask && (
-            <Button variant="outline" onClick={onEditTask}>
-              Изменить задачу
-            </Button>
-          )}
-        </div>
-      )}
-
-      {isEditable && !block.isCompleted && (
-        <>
-          <form
-            className={styles.moveForm}
-            onSubmit={(event) => {
-              event.preventDefault()
-              onMove(start)
-            }}
-          >
-            <Field label="Перенести на" className={styles.moveField}>
-              <input type="time" required value={start} onChange={(event) => setStart(event.target.value)} />
-            </Field>
-            <Button type="submit" variant="outline" disabled={isMoving || start === block.start}>
-              Перенести
-            </Button>
-          </form>
-          <p className={uiStyles.muted}>Блок можно перетащить мышью. Остальные задачи перестроятся вокруг него.</p>
-        </>
-      )}
-
-      {isEditable && block.isPinned && (
-        <button type="button" className={styles.linkButton} onClick={() => unpin.mutate({ date, blockId: block.id })}>
-          Открепить: пусть планировщик снова двигает этот блок
-        </button>
-      )}
-
-      <FormError>{moveError ?? unpin.error?.message ?? setCompleted.error?.message}</FormError>
-    </div>
-  )
-}
-
-function LoadCard({ schedule, isPast }: { schedule: Schedule | undefined; isPast: boolean }) {
-  const hasBlocks = (schedule?.blocks.length ?? 0) > 0
-  const unplaced = schedule?.unplacedTasks ?? []
-
-  return (
-    <Card title="Нагрузка">
-      {!hasBlocks && <p className={uiStyles.muted}>Предупреждения о перегрузке и советы по отдыху появятся, когда в дне будут задачи.</p>}
-      {hasBlocks && schedule!.warnings.length === 0 && (
-        <p className={uiStyles.muted}>Перегрузки нет: нагрузка распределена равномерно.</p>
-      )}
-      {schedule && schedule.warnings.length > 0 && <WarningList warnings={schedule.warnings} />}
-      {!isPast && unplaced.length > 0 && (
-        <div className={styles.unplaced}>
-          <h3 className={styles.unplacedTitle}>Не поместилось в рабочие часы</h3>
-          <ul className={styles.unplacedList}>
-            {unplaced.map((task) => (
-              <li key={task.id}>
-                {task.title}: {formatDuration(task.durationMinutes)}, день {formatDate(task.dueDate)}
-              </li>
-            ))}
-          </ul>
-          <p className={uiStyles.muted}>Сократите длительность, перенесите задачу на другой день или расширьте рабочие часы в профиле.</p>
-        </div>
-      )}
-    </Card>
-  )
-}
 
 type Editor = { mode: 'closed' } | { mode: 'new' } | { mode: 'edit'; task: Task }
 
+function Legend() {
+  return (
+    <ul className={styles.legend}>
+      {TASK_TYPES.map((type) => (
+        <li key={type}>
+          <span className={styles.dot} style={{ background: taskTypeColor[type] }} />
+          {taskTypeLabel[type]}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function SchedulePage() {
   const today = todayIso()
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [params, setParams] = useSearchParams()
   const dateParam = params.get('date')
   const date = isIsoDate(dateParam) ? dateParam : today
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [draft, setDraft] = useState<MoveDraft | null>(null)
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' })
   const { schedule, current, build, isProfileComplete } = usePlannedSchedule(date)
+  useBackgroundCalendarSync(isProfileComplete)
   const move = useMoveBlock()
+  const addBreak = useAddBreak()
+  const lighten = useSetLightened()
+  const setCompleted = useSetTaskCompleted()
   const tasks = useTasks()
 
   const selected = current?.blocks.find((block) => block.id === selectedId)
-  const selectedTask = tasks.data?.find((task) => task.id === selected?.taskId)
+  const drafted = draft ? current?.blocks.find((block) => block.id === draft.blockId) : undefined
   const hasBlocks = (current?.blocks.length ?? 0) > 0
   const isPast = date < today
   const isEditable = !isPast && isProfileComplete
-  const isBusy = move.isPending || build.isPending
+  const isBusy = move.isPending || build.isPending || addBreak.isPending
+  const stats = current ? taskStats(current) : null
 
   const goTo = (next: string) => {
     setSelectedId(null)
+    setDraft(null)
     build.reset()
     move.reset()
     setParams(next === today ? {} : { date: next })
   }
 
-  const moveBlock = (blockId: string, start: string) => move.mutate({ date, blockId, start })
+  const toggleDone = (block: ScheduleBlock) =>
+    block.taskId && setCompleted.mutate({ id: block.taskId, isCompleted: !block.isCompleted })
+
+  const applyDraft = () => {
+    if (!draft) return
+    move.mutate({ date, blockId: draft.blockId, start: draft.start }, { onSuccess: () => setDraft(null) })
+  }
+
+  const details = (block: ScheduleBlock) => (
+    <BlockDetails
+      key={`${block.id}-${block.start}`}
+      block={block}
+      date={date}
+      isEditable={isEditable}
+      onStartMove={() => {
+        move.reset()
+        setDraft({ blockId: block.id, start: block.start })
+      }}
+      onEditTask={
+        block.taskId && tasks.data?.find((task) => task.id === block.taskId)
+          ? () => setEditor({ mode: 'edit', task: tasks.data!.find((task) => task.id === block.taskId)! })
+          : undefined
+      }
+    />
+  )
+
+  const summary = draft
+    ? 'Режим ручной корректировки · перетащите блок или задайте время'
+    : [
+        formatWeekdayDate(date),
+        stats && stats.count > 0 ? `${pluralize(stats.count, ['задача', 'задачи', 'задач'])}, ${formatDuration(stats.minutes)}` : null,
+        current ? `рабочий день ${current.workdayStart}–${current.workdayEnd}` : null,
+        isPast ? 'прошедший день, только просмотр' : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
 
   return (
     <>
       <PageHeader
         title="Расписание дня"
+        subtitle={isMobile && stats ? `${pluralize(stats.count, ['задача', 'задачи', 'задач'])} · ${formatDuration(stats.minutes)}` : undefined}
         action={
-          isEditable ? (
-            <div className={styles.headerActions}>
-              <Button variant="outline" onClick={() => setEditor({ mode: 'new' })}>
-                Новая задача
-              </Button>
-              {hasBlocks && (
-                <Button disabled={isBusy} onClick={() => build.mutate(date)}>
-                  Оптимизировать день
+          <>
+            <NotificationBell />
+            {isEditable && !isMobile && (
+              <>
+                <Button variant="outline" icon="refresh" disabled={isBusy || !hasBlocks} onClick={() => build.mutate(date)}>
+                  Перестроить
                 </Button>
-              )}
-            </div>
-          ) : undefined
+                {!draft && (
+                  <Button icon="plus" onClick={() => setEditor({ mode: 'new' })}>
+                    Новая задача
+                  </Button>
+                )}
+              </>
+            )}
+          </>
         }
       />
 
@@ -338,19 +143,16 @@ export function SchedulePage() {
           <button
             type="button"
             aria-pressed={date === today}
-            className={`${uiStyles.segment} ${date === today ? uiStyles.segmentActive : ''}`}
+            className={`${uiStyles.segment} ${date === today ? uiStyles.segmentActive : ''} ${styles.dateCurrent}`}
             onClick={() => goTo(today)}
           >
-            Сегодня
+            {isMobile ? formatRelativeDay(date, today) : 'Сегодня'}
           </button>
           <button type="button" className={uiStyles.segment} aria-label="Следующий день" onClick={() => goTo(addDays(date, 1))}>
             →
           </button>
         </div>
-        <span className={uiStyles.muted}>
-          {formatLongDate(date)}
-          {isPast && ' · прошедший день, только просмотр'}
-        </span>
+        {!isMobile && <span className={styles.summary}>{summary}</span>}
       </div>
 
       {!isProfileComplete && (
@@ -358,23 +160,56 @@ export function SchedulePage() {
           Чтобы задачи встали в расписание, <Link to="/profile">укажите дату рождения и хронотип</Link>.
         </p>
       )}
-      <FormError>{build.error?.message ?? schedule.error?.message}</FormError>
+      {current?.isLightened && (
+        <div className={styles.lightened}>
+          <Icon name="battery-low" size={18} />
+          <span className={styles.lightenedText}>Облегчённый день: не больше 2 часов сложной работы, между задачами остаются паузы.</span>
+          {isEditable && (
+            <Button variant="link" disabled={lighten.isPending} onClick={() => lighten.mutate({ date, isLightened: false })}>
+              Вернуть обычный режим
+            </Button>
+          )}
+        </div>
+      )}
+      <FormError>{build.error?.message ?? schedule.error?.message ?? addBreak.error?.message ?? setCompleted.error?.message}</FormError>
 
       <div className={styles.grid}>
-        <Card title="Шкала дня">
+        <Card title="Шкала дня" aside={isMobile ? undefined : <Legend />} className={styles.timelineCard}>
           {!current && schedule.isPending && <Loading />}
-          {current && (
+          {current && !isMobile && (
             <Timeline
               schedule={current}
               selectedId={selectedId}
+              draft={draft}
               isToday={date === today}
               isEditable={isEditable}
               isBusy={isBusy}
               onSelect={(id) => {
                 move.reset()
                 setSelectedId(id)
+                if (draft && draft.blockId !== id) setDraft(null)
               }}
-              onMove={moveBlock}
+              onDraft={(next) => {
+                move.reset()
+                setDraft(next)
+              }}
+              onToggleDone={toggleDone}
+              onSuggest={(action) =>
+                addBreak.mutate({
+                  date,
+                  pause: { start: action.start, durationMinutes: action.durationMinutes, kind: action.kind === 'insertWalk' ? 'walk' : 'rest' },
+                })
+              }
+            />
+          )}
+          {current && isMobile && (
+            <MobileDay
+              schedule={current}
+              selectedId={selectedId}
+              isToday={date === today}
+              onSelect={(id) => setSelectedId(id || null)}
+              onToggleDone={toggleDone}
+              renderDetails={(block) => (draft?.blockId === block.id ? null : details(block))}
             />
           )}
           {current && !hasBlocks && current.unplacedTasks.length === 0 && !isPast && (
@@ -383,26 +218,32 @@ export function SchedulePage() {
         </Card>
 
         <div className={styles.side}>
-          <Card title="Почему здесь?" className={styles.why}>
-            {selected ? (
-              <BlockDetails
-                key={`${selected.id}-${selected.start}`}
-                block={selected}
-                date={date}
-                isEditable={isEditable}
-                isMoving={isBusy}
-                moveError={move.error?.message}
-                onMove={(start) => moveBlock(selected.id, start)}
-                onEditTask={selectedTask ? () => setEditor({ mode: 'edit', task: selectedTask }) : undefined}
-              />
-            ) : (
-              <>
-                <EmptyState title="Выберите блок" text="Здесь будет объяснение, почему задача стоит в это время." />
-                <FormError>{move.error?.message}</FormError>
-              </>
-            )}
-          </Card>
-          <LoadCard schedule={current} isPast={isPast} />
+          {draft && drafted ? (
+            <MovePanel
+              key={draft.blockId}
+              block={drafted}
+              date={date}
+              draft={draft}
+              isApplying={move.isPending}
+              applyError={move.error?.message}
+              onChange={(start) => setDraft({ ...draft, start })}
+              onApply={applyDraft}
+              onCancel={() => {
+                move.reset()
+                setDraft(null)
+              }}
+            />
+          ) : (
+            <>
+              {!isMobile && (selected || !current?.load.isOverloaded) && (
+                <Card title="Почему здесь?" className={styles.why}>
+                  {selected ? details(selected) : <WhyEmpty />}
+                </Card>
+              )}
+              <LoadCard schedule={current} isEditable={isEditable} />
+              {current && !isPast && current.unplacedTasks.length > 0 && <UnplacedCard schedule={current} isEditable={isEditable} />}
+            </>
+          )}
         </div>
       </div>
 

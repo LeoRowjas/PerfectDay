@@ -1,0 +1,247 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.stat {
+  gap: 6px;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.warning {
+  color: var(--color-warning);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: 20px;
+}
+
+.planCard {
+  gap: 12px;
+}
+
+.chart {
+  margin-top: 8px;
+}
+
+.dayTotals {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin: -4px 0 0 36px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.criticalDay {
+  color: var(--color-warning);
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.legend span,
+.typeName {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i,
+.typeName i {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.types {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.subTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.typeRow {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.typeName i {
+  border-radius: 5px;
+}
+
+.track {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  background: var(--color-bg);
+  border-radius: 3px;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.typePercent {
+  text-align: right;
+}
+
+.insightsCard {
+  gap: 12px;
+}
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insight {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.insight strong {
+  font-size: 14px;
+}
+
+.insight p {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.insightIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: 8px;
+}
+
+.insight_postponed {
+  color: var(--cycle-emotional);
+  background: var(--color-success-soft);
+}
+
+.insight_criticalDays {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.insight_trend {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.apply {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.apply p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.applied {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-success);
+}
+
+.applied > span:first-child {
+  flex: none;
+  margin-top: 2px;
+}
+
+@media (max-width: 1200px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats {
+    gap: 12px;
+  }
+
+  .statValue {
+    font-size: 26px;
+  }
+
+  .typeRow {
+    grid-template-columns: 138px minmax(0, 1fr) 40px;
+    gap: 10px;
+  }
+
+  .dayTotals {
+    margin-left: 36px;
+  }
+}
+
+.insightWarning {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}

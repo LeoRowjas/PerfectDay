@@ -154,4 +154,33 @@ public class DayPlannerTests
         Assert.Contains("10:00–11:00", PlacementExplainer.ForPlanned(Profile(), TaskType.Intellectual, range));
         Assert.Contains("Рутинная", PlacementExplainer.ForPlanned(Profile(), TaskType.Routine, range));
     }
+
+    [Fact]
+    public void LightDay_LimitsHardWorkAndKeepsPauses()
+    {
+        var options = new PlanOptions(DayPlanner.LightDayHardMinutes, RequireBreaks: true);
+        var plan = DayPlanner.PlaceAround(Profile(), Workday,
+        [
+            Task(TaskType.Intellectual, 90, TaskPriority.High), Task(TaskType.Creative, 60),
+            Task(TaskType.Physical, 30), Task(TaskType.Routine, 60)
+        ], [], null, options);
+
+        var hard = plan.Tasks.Where(p => p.Task.Type != TaskType.Routine).Sum(p => p.Range.Length);
+        Assert.True(hard <= DayPlanner.LightDayHardMinutes);
+        Assert.Contains(plan.Unplaced, t => t.Type == TaskType.Creative);
+
+        var ranges = plan.Tasks.Select(p => p.Range).OrderBy(r => r.Start).ToList();
+        for (var i = 1; i < ranges.Count; i++) Assert.True(ranges[i].Start - ranges[i - 1].End >= 15);
+    }
+
+    [Fact]
+    public void Forecast_FindsPeaksAndCriticalDays()
+    {
+        var forecast = Forecast.Create(Birth, Date, 30);
+
+        Assert.NotEmpty(forecast.GoodPeriods);
+        Assert.All(forecast.GoodPeriods, p => Assert.True(p.MaxPercent >= 90 && p.From <= p.To));
+        Assert.NotEmpty(forecast.CriticalDates);
+        Assert.All(forecast.CriticalDates, c => Assert.Equal(BiorhythmCalculator.CriticalCycles(Birth, c.Date), c.Cycles));
+    }
 }

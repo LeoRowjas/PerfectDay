@@ -12,6 +12,11 @@ public static class DependencyInjection
         services.AddScoped<TaskService>();
         services.AddScoped<BiorhythmService>();
         services.AddScoped<ScheduleService>();
+        services.AddScoped<NotificationService>();
+        services.AddScoped<TaskSeriesGenerator>();
+        services.AddScoped<CalendarService>();
+        services.AddScoped<AnalyticsService>();
+        services.AddScoped<ExternalAuthService>();
         return services;
     }
 }

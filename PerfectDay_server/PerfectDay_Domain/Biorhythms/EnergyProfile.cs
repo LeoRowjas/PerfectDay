@@ -1,4 +1,5 @@
 using PerfectDay_Domain.Enums;
+using PerfectDay_Domain.Planning;
 
 namespace PerfectDay_Domain.Biorhythms;
 
@@ -18,6 +19,7 @@ public sealed class EnergyProfile
 
     public EnergyProfile(DateOnly birthDate, DateOnly date, Chronotype chronotype)
     {
+        BirthDate = birthDate;
         Date = date;
         Chronotype = chronotype;
         _values = BiorhythmCalculator.Cycles.ToDictionary(
@@ -26,6 +28,7 @@ public sealed class EnergyProfile
         CriticalCycles = BiorhythmCalculator.CriticalCycles(birthDate, date);
     }
 
+    public DateOnly BirthDate { get; }
     public DateOnly Date { get; }
     public Chronotype Chronotype { get; }
     public IReadOnlyList<BiorhythmCycle> CriticalCycles { get; }
@@ -37,6 +40,21 @@ public sealed class EnergyProfile
     {
         var circadian = Circadian(cycle, time.ToTimeSpan().TotalHours);
         return CycleWeight * _values[cycle] + CircadianWeight * (2 * circadian - 1);
+    }
+
+    /// <summary>Средняя энергия цикла за интервал, от −1 до +1.</summary>
+    public double AverageEnergy(BiorhythmCycle cycle, TimeRange range)
+    {
+        const int stepMinutes = 15;
+        var total = 0d;
+        var samples = 0;
+        for (var minute = range.Start; minute < range.End; minute += stepMinutes)
+        {
+            total += Energy(cycle, TimeRange.FromMinutes(minute));
+            samples++;
+        }
+
+        return samples == 0 ? Energy(cycle, range.StartTime) : total / samples;
     }
 
     /// <summary>Насколько время подходит для задачи этого типа: чем больше, тем лучше.</summary>

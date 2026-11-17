@@ -51,3 +51,43 @@ export function timeToMinutes(time: string): number {
 export function minutesToTime(minutes: number): string {
   return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`
 }
+
+export function nowTime(): string {
+  const now = new Date()
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}`
+}
+
+export function nowMinutes(): number {
+  const now = new Date()
+  return now.getHours() * 60 + now.getMinutes()
+}
+
+/** «9 ноября». */
+export function formatDayMonth(iso: string): string {
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(fromIso(iso))
+}
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/** «Понедельник, 9 ноября». */
+export function formatWeekdayDate(iso: string): string {
+  return capitalize(new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }).format(fromIso(iso)))
+}
+
+/** «Сегодня, 9 ноября», «Завтра, 10 ноября» или «Среда, 11 ноября». */
+export function formatRelativeDay(iso: string, today: string): string {
+  if (iso === today) return `Сегодня, ${formatDayMonth(iso)}`
+  if (iso === addDays(today, 1)) return `Завтра, ${formatDayMonth(iso)}`
+  if (iso === addDays(today, -1)) return `Вчера, ${formatDayMonth(iso)}`
+  return formatWeekdayDate(iso)
+}
+
+/** «Пн 9» для подписи оси графика. */
+export function formatWeekdayShort(iso: string): string {
+  const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short' }).format(fromIso(iso))
+  return `${capitalize(weekday)} ${Number(iso.slice(8))}`
+}
+
+export function daysBetween(from: string, to: string): number {
+  return Math.round((fromIso(to).getTime() - fromIso(from).getTime()) / 86_400_000)
+}

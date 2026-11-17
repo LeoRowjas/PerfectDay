@@ -32,7 +32,30 @@ public enum BiorhythmCycle
 public enum BlockKind
 {
     Task,
-    Break
+    Break,
+    Event
+}
+
+public enum RecurrenceKind
+{
+    Daily,
+    Weekly
+}
+
+/// <summary>Откуда импортирован календарь; все подключаются по ссылке iCal.</summary>
+public enum CalendarProvider
+{
+    Google,
+    Yandex,
+    Apple
+}
+
+/// <summary>Сервисы, через которые можно войти без пароля.</summary>
+public enum ExternalProvider
+{
+    Yandex,
+    Vk,
+    Google
 }
 
 public enum LoadWarningKind
@@ -40,7 +63,34 @@ public enum LoadWarningKind
     CriticalDay,
     LongHardSeries,
     TooMuchHardWork,
-    TaskOnCycleDecline
+    TaskOnCycleDecline,
+    SwitchActivity
+}
+
+/// <summary>Что можно сделать с предупреждением одной кнопкой.</summary>
+public enum LoadActionKind
+{
+    AddBreak,
+    InsertWalk,
+    MoveTask,
+    Lighten
+}
+
+public enum CyclePhase
+{
+    Rising,
+    Falling,
+    Peak,
+    Trough,
+    Critical
+}
+
+public enum NotificationKind
+{
+    PlanReady,
+    TaskStart,
+    BreakSoon,
+    CriticalTomorrow
 }
 
 public enum WarningSeverity

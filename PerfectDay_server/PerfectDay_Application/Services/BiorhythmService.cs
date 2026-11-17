@@ -10,32 +10,66 @@ namespace PerfectDay_Application.Services;
 
 public sealed class BiorhythmService(IUserRepository users)
 {
-    private const int WeekDaysBack = 3;
-    private const int WeekDaysForward = 3;
-    private const int MonthDaysBack = 7;
-    private const int MonthDaysForward = 23;
+    private const int WeekDays = 7;
+    private const int MonthDays = 30;
+    private const int MaxForecastDays = 90;
+    private const double PeakLevel = 0.9;
 
     public async Task<DashboardDto> GetDashboardAsync(Guid userId, DateOnly date, CancellationToken ct)
     {
         var user = await GetUserAsync(userId, ct);
         if (user.BirthDate is not { } birthDate || user.Chronotype is not { } chronotype)
-            return new DashboardDto(date, false, EmptyCycles(), [], []);
+            return new DashboardDto(date, false, false, user.Chronotype, null, EmptyCycles(), [], []);
 
         var profile = new EnergyProfile(birthDate, date, chronotype);
+        var daysLived = date.DayNumber - birthDate.DayNumber;
         var cycles = BiorhythmCalculator.Cycles
-            .Select(cycle => new CycleValueDto(
-                cycle,
-                BiorhythmCalculator.PeriodDays(cycle),
-                BiorhythmCalculator.Percent(profile.CycleValue(cycle)),
-                profile.CriticalCycles.Contains(cycle)))
+            .Select(cycle =>
+            {
+                var period = BiorhythmCalculator.PeriodDays(cycle);
+                var isCritical = profile.CriticalCycles.Contains(cycle);
+                return new CycleValueDto(
+                    cycle,
+                    period,
+                    ((daysLived % period) + period) % period + 1,
+                    BiorhythmCalculator.Percent(profile.CycleValue(cycle)),
+                    Phase(birthDate, date, cycle, isCritical),
+                    isCritical);
+            })
             .ToList();
 
         var recommendations = DayRecommendations.Create(profile, user.WorkdayStart, user.WorkdayEnd)
-            .Select(r => new RecommendationDto(r.Activity, r.Title, r.Start, r.End, r.Text))
+            .Select(r => new RecommendationDto(r.Activity, r.Title, r.Start, r.End, r.Text, r.EnergyFrom, r.EnergyTo, r.IsDeclining))
             .ToList();
 
         var warnings = LoadAnalyzer.CriticalDayWarnings(profile).Select(w => w.ToDto()).ToList();
-        return new DashboardDto(date, true, cycles, recommendations, warnings);
+        return new DashboardDto(date, true, user.OnboardedAt is null, chronotype, daysLived, cycles, recommendations, warnings);
+    }
+
+    /// <summary>Лучшие и критические дни на ближайшие дни, начиная с date.</summary>
+    public async Task<ForecastDto> GetForecastAsync(Guid userId, DateOnly date, int days, CancellationToken ct)
+    {
+        if (days is < 1 or > MaxForecastDays)
+            throw new AppValidationException($"Прогноз строится на срок от 1 до {MaxForecastDays} дней.");
+
+        var user = await GetUserAsync(userId, ct);
+        if (user.BirthDate is not { } birthDate)
+            throw new ConflictException("Укажите дату рождения в профиле.");
+
+        var forecast = Forecast.Create(birthDate, date, days);
+        return new ForecastDto(date, date.AddDays(days - 1),
+            forecast.GoodPeriods.Select(p => new GoodPeriodDto(p.Cycle, p.From, p.To, p.MaxPercent)).ToList(),
+            forecast.CriticalDates.Select(c => new CriticalDateDto(c.Date, c.Cycles)).ToList());
+    }
+
+    private static CyclePhase Phase(DateOnly birthDate, DateOnly date, BiorhythmCycle cycle, bool isCritical)
+    {
+        if (isCritical) return CyclePhase.Critical;
+
+        var value = BiorhythmCalculator.Value(birthDate, date, cycle);
+        if (value >= PeakLevel) return CyclePhase.Peak;
+        if (value <= -PeakLevel) return CyclePhase.Trough;
+        return BiorhythmCalculator.Value(birthDate, date.AddDays(1), cycle) >= value ? CyclePhase.Rising : CyclePhase.Falling;
     }
 
     public async Task<ChartDto> GetChartAsync(Guid userId, DateOnly date, ChartScale scale, CancellationToken ct)
@@ -47,8 +81,8 @@ public sealed class BiorhythmService(IUserRepository users)
         var points = scale switch
         {
             ChartScale.Day => HourlyPoints(birthDate, date, chronotype),
-            ChartScale.Week => DailyPoints(birthDate, date.AddDays(-WeekDaysBack), date.AddDays(WeekDaysForward)),
-            ChartScale.Month => DailyPoints(birthDate, date.AddDays(-MonthDaysBack), date.AddDays(MonthDaysForward)),
+            ChartScale.Week => DailyPoints(birthDate, date, date.AddDays(WeekDays - 1)),
+            ChartScale.Month => DailyPoints(birthDate, date, date.AddDays(MonthDays - 1)),
             _ => throw new AppValidationException("Неизвестный масштаб графика.")
         };
 
@@ -91,7 +125,7 @@ public sealed class BiorhythmService(IUserRepository users)
     }
 
     private static List<CycleValueDto> EmptyCycles() => BiorhythmCalculator.Cycles
-        .Select(cycle => new CycleValueDto(cycle, BiorhythmCalculator.PeriodDays(cycle), 0, false))
+        .Select(cycle => new CycleValueDto(cycle, BiorhythmCalculator.PeriodDays(cycle), 0, 0, CyclePhase.Rising, false))
         .ToList();
 
     private async Task<User> GetUserAsync(Guid userId, CancellationToken ct) =>

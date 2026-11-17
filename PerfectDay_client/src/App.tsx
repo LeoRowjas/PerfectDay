@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { useProfile } from './api/queries'
 import { AppLayout } from './components/AppLayout'
 import { FormError, Loading } from './components/ui'
+import { AnalyticsPage } from './features/analytics/AnalyticsPage'
 import { NotFoundPage } from './components/NotFoundPage'
 import { LoginPage, RegisterPage } from './features/auth/AuthPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
@@ -36,6 +37,7 @@ export function App() {
           <Route index element={<DashboardPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

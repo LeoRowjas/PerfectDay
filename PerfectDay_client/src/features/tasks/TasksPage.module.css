@@ -1,26 +1,36 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .chip {
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
-  border-radius: 22px;
+  border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
 }
 
 .chipActive {
   background: var(--color-ink);
+  border-color: var(--color-ink);
   color: #fff;
 }
 
 .card {
   flex: 1;
+  padding: 8px 24px 24px;
 }
 
 .tableScroll {
@@ -29,48 +39,56 @@
 
 .table {
   width: 100%;
-  min-width: 860px;
   border-collapse: collapse;
-  table-layout: fixed;
+  font-size: 14px;
 }
 
 .table th {
-  padding: 0 8px 12px;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--color-border);
   color: var(--color-muted);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-align: left;
+  white-space: nowrap;
 }
 
 .table .checkColumn {
-  width: 44px;
+  width: 40px;
 }
 
 .table .titleColumn {
-  width: 32%;
+  width: 36%;
+}
+
+.table .actionsColumn {
+  width: 88px;
 }
 
 .table td {
-  padding: 13px 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.15);
-  font-size: 16px;
-  font-weight: 500;
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
 .table td:nth-child(2) {
-  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.table tbody tr:hover {
+  background: var(--color-bg);
 }
 
 .checkbox {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   margin: 0;
-  accent-color: var(--color-primary);
+  accent-color: var(--color-success);
   cursor: pointer;
-  vertical-align: middle;
 }
 
-.completed td {
+.completed td,
+.completed .meta {
   color: var(--color-faint);
 }
 
@@ -79,18 +97,66 @@
   text-decoration: line-through;
 }
 
-.dot {
-  flex-shrink: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+.deleting td {
+  background: var(--color-danger-soft);
 }
 
-.overdue {
-  display: block;
-  color: var(--color-warning);
-  font-size: 12px;
-  font-weight: 600;
+.dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.titleCell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.rowAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--color-muted);
+}
+
+.rowAction:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.rowDelete:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .notice {
@@ -101,7 +167,6 @@
 }
 
 .notice a {
-  color: var(--color-primary-dark);
   font-weight: 700;
 }
 
@@ -110,28 +175,105 @@
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip-path: inset(50%);
+  clip: rect(0 0 0 0);
   white-space: nowrap;
 }
 
-.table tbody tr {
-  cursor: pointer;
+/* Телефон */
+
+@media (max-width: 768px) {
+  .filters {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+  }
+
+  .chip {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
 }
 
-.table tbody tr:hover {
-  background: var(--color-bg);
+.mobileCard {
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 
-.title {
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.taskCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px 12px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
   padding: 0;
   background: none;
   border: 0;
-  font-weight: 700;
   text-align: left;
 }
 
-.type {
+.meta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.more {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+}
+
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(59, 91, 219, 0.35);
+  color: #fff;
+}
+
+.origin {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-faint);
+  vertical-align: -2px;
 }

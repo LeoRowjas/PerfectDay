@@ -16,8 +16,16 @@
   --color-primary-soft: #eef2ff;
   --color-danger: #b42318;
   --color-danger-soft: #fef3f2;
+  --color-danger-border: #f4b4ae;
   --color-warning-soft: #fff7ed;
   --color-warning: #c2410c;
+  --color-warning-ink: #9a3412;
+  --color-warning-border: #f2c49b;
+  --color-success: #0f766e;
+  --color-success-soft: #e7f5f2;
+  --color-primary-border: #b8c5f4;
+  --color-toast: #1b2340;
+  --shadow-popover: 0 16px 40px rgba(20, 27, 52, 0.18);
 
   --cycle-physical: #c2410c;
   --cycle-emotional: #0f766e;
@@ -55,6 +63,10 @@ h2,
 h3,
 p {
   margin: 0;
+}
+
+a {
+  color: var(--color-primary-dark);
 }
 
 button,

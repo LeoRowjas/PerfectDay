@@ -31,4 +31,12 @@ public sealed class ProfileService(IUserRepository users, IScheduleRepository sc
         await unitOfWork.SaveChangesAsync(ct);
         return user.ToDto();
     }
+
+    public async Task<ProfileDto> UpdateRemindersAsync(Guid userId, ReminderSettingsDto request, CancellationToken ct)
+    {
+        var user = await users.GetByIdAsync(userId, ct) ?? throw new NotFoundException("Пользователь не найден.");
+        user.UpdateReminders(request.BeforeTask!.Value, request.Rest!.Value, request.Browser!.Value);
+        await unitOfWork.SaveChangesAsync(ct);
+        return user.ToDto();
+    }
 }

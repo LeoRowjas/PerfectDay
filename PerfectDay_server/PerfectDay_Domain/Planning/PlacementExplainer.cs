@@ -60,7 +60,7 @@ public static class PlacementExplainer
         _ => throw new ArgumentOutOfRangeException(nameof(cycle))
     };
 
-    private static string ChronotypeName(Chronotype chronotype) => chronotype switch
+    public static string ChronotypeName(Chronotype chronotype) => chronotype switch
     {
         Chronotype.Lark => "жаворонок",
         Chronotype.Dove => "голубь",

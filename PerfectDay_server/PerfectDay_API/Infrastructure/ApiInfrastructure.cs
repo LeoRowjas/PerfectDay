@@ -60,7 +60,7 @@ public sealed class AppExceptionHandler(IProblemDetailsService problemDetails) :
         {
             NotFoundException => StatusCodes.Status404NotFound,
             ConflictException or DomainRuleException => StatusCodes.Status409Conflict,
-            AppValidationException => StatusCodes.Status400BadRequest,
+            AppValidationException or ExternalAuthException or CalendarFeedException => StatusCodes.Status400BadRequest,
             InvalidCredentialsException => StatusCodes.Status401Unauthorized,
             _ => null
         };

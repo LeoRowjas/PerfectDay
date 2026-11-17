@@ -27,7 +27,8 @@ public sealed class AuthService(
     public async Task<AuthResult> LoginAsync(LoginRequest request, CancellationToken ct)
     {
         var user = await users.GetByEmailAsync(NormalizeEmail(request.Email), ct);
-        if (user is null || !passwordHasher.Verify(user.PasswordHash, request.Password))
+        // У аккаунта, созданного через Яндекс ID, VK ID или Google, пароля нет.
+        if (user?.PasswordHash is not { } hash || !passwordHasher.Verify(hash, request.Password))
             throw new InvalidCredentialsException();
 
         return new AuthResult(user.ToDto(), tokens.CreateToken(user));

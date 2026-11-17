@@ -1,4 +1,4 @@
-import type { BiorhythmCycle, Chronotype, TaskPriority, TaskType } from '../api/types'
+import type { BiorhythmCycle, Chronotype, CyclePhase, TaskPriority, TaskType } from '../api/types'
 
 export const TASK_TYPES: TaskType[] = ['intellectual', 'physical', 'creative', 'routine']
 
@@ -55,7 +55,79 @@ export function cyclePeriodLabel(days: number): string {
 }
 
 export const chronotypeOptions: { value: Chronotype; title: string; hint: string }[] = [
-  { value: 'lark', title: 'Жаворонок', hint: 'Пик ясности — утром' },
-  { value: 'dove', title: 'Голубь', hint: 'Пик ясности — днём' },
+  { value: 'lark', title: 'Жаворонок', hint: 'Пик ясности утром, с 8:00 до 11:00' },
+  { value: 'dove', title: 'Голубь', hint: 'Пик ясности днём, с 10:00 до 12:30' },
   { value: 'owl', title: 'Сова', hint: 'Пики сдвинуты на 3–4 часа позже' },
 ]
+
+export const chronotypeName: Record<Chronotype, string> = {
+  lark: 'жаворонок',
+  dove: 'голубь',
+  owl: 'сова',
+}
+
+export const taskTypeShortLabel: Record<TaskType, string> = {
+  intellectual: 'Интел.',
+  physical: 'Физ.',
+  creative: 'Творч.',
+  routine: 'Рутин.',
+}
+
+export const cycleShortLabel: Record<BiorhythmCycle, string> = {
+  physical: 'Физ.',
+  emotional: 'Эмоц.',
+  intellectual: 'Интел.',
+}
+
+/** Какой цикл задаёт энергию для задачи этого типа; у рутины своего цикла нет. */
+export const taskTypeCycle: Record<TaskType, BiorhythmCycle | null> = {
+  intellectual: 'intellectual',
+  physical: 'physical',
+  creative: 'emotional',
+  routine: null,
+}
+
+/** Короткое название дела для списка «Лучшие часы». */
+export const activityLabel: Record<TaskType, string> = {
+  intellectual: 'умственная работа',
+  physical: 'спорт, прогулка',
+  creative: 'общение, встречи',
+  routine: 'рутина',
+}
+
+export const phaseBadge: Record<CyclePhase, string> = {
+  rising: 'подъём',
+  falling: 'спад',
+  peak: 'пик',
+  trough: 'спад',
+  critical: 'критический',
+}
+
+export const phaseText: Record<CyclePhase, string> = {
+  rising: 'растёт',
+  falling: 'снижается',
+  peak: 'близко к пику',
+  trough: 'около минимума',
+  critical: 'пересекает ноль',
+}
+
+export const priorityLabelLower: Record<TaskPriority, string> = {
+  low: 'низкий',
+  medium: 'средний',
+  high: 'высокий',
+}
+
+export function formatPercent(percent: number): string {
+  if (percent > 0) return `+${percent}%`
+  return percent < 0 ? `−${Math.abs(percent)}%` : '0%'
+}
+
+/** «1 задача», «3 задачи», «6 задач». */
+export function pluralize(count: number, forms: [string, string, string]): string {
+  const lastTwo = count % 100
+  const last = count % 10
+  if (lastTwo >= 11 && lastTwo <= 14) return `${count} ${forms[2]}`
+  if (last === 1) return `${count} ${forms[0]}`
+  if (last >= 2 && last <= 4) return `${count} ${forms[1]}`
+  return `${count} ${forms[2]}`
+}

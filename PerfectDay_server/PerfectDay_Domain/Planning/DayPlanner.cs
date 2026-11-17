@@ -8,12 +8,19 @@ public sealed record PlannableTask(Guid TaskId, string Title, TaskType Type, Tas
 
 public sealed record Placement(PlannableTask Task, TimeRange Range, bool IsPart = false);
 
+/// <summary>Ограничения облегчённого дня: лимит сложной работы и обязательные паузы между задачами.</summary>
+public sealed record PlanOptions(int? HardMinutesBudget = null, bool RequireBreaks = false)
+{
+    public static PlanOptions Normal { get; } = new();
+}
+
 public sealed record DayPlan(IReadOnlyList<Placement> Tasks, TimeRange? Lunch, IReadOnlyList<PlannableTask> Unplaced);
 
 /// <summary>Расписание на простых правилах: каждая задача получает самое подходящее свободное окно.</summary>
 public static class DayPlanner
 {
     public const int LunchMinutes = 60;
+    public const int LightDayHardMinutes = 120;
     private const int LunchOffsetMinutes = 180;
     private const int MinDayForLunchMinutes = 360;
     private const int StartStepMinutes = 15;
@@ -25,8 +32,10 @@ public static class DayPlanner
 
     /// <summary>Перестраивает задачи вокруг занятых интервалов. Обед ставится как можно ближе к желаемому времени.</summary>
     public static DayPlan PlaceAround(EnergyProfile profile, TimeRange workday, IEnumerable<PlannableTask> tasks,
-        IReadOnlyCollection<TimeRange> fixedRanges, int? lunchTarget)
+        IReadOnlyCollection<TimeRange> fixedRanges, int? lunchTarget, PlanOptions? options = null)
     {
+        options ??= PlanOptions.Normal;
+        var hardBudget = options.HardMinutesBudget ?? int.MaxValue;
         var occupied = fixedRanges.ToList();
 
         TimeRange? lunch = lunchTarget is { } target ? FindNearest(workday, occupied, target, LunchMinutes) : null;
@@ -38,7 +47,16 @@ public static class DayPlanner
 
         foreach (var task in Order(tasks))
         {
-            var range = FindBest(profile, workday, occupied, taskRanges, task);
+            var isHard = task.Type != TaskType.Routine;
+            if (isHard && task.DurationMinutes > hardBudget)
+            {
+                unplaced.Add(task);
+                continue;
+            }
+
+            if (isHard) hardBudget -= task.DurationMinutes;
+
+            var range = FindBest(profile, workday, occupied, taskRanges, task, options.RequireBreaks);
             if (range is not null)
             {
                 occupied.Add(range.Value);
@@ -50,6 +68,7 @@ public static class DayPlanner
             var parts = SplitAcrossWindows(profile, workday, occupied, task);
             if (parts is null)
             {
+                if (isHard) hardBudget += task.DurationMinutes;
                 unplaced.Add(task);
                 continue;
             }
@@ -90,10 +109,11 @@ public static class DayPlanner
 
     // Сначала ищем окно с небольшим перерывом после соседних задач; если день плотный, ставим вплотную.
     private static TimeRange? FindBest(EnergyProfile profile, TimeRange workday, List<TimeRange> occupied,
-        List<TimeRange> taskRanges, PlannableTask task)
+        List<TimeRange> taskRanges, PlannableTask task, bool requireBreaks)
     {
         var buffered = occupied.Concat(taskRanges.Select(r => new TimeRange(r.Start - BufferMinutes, r.End + BufferMinutes))).ToList();
-        return FindBestIn(profile, workday, buffered, task) ?? FindBestIn(profile, workday, occupied, task);
+        var best = FindBestIn(profile, workday, buffered, task);
+        return best is null && !requireBreaks ? FindBestIn(profile, workday, occupied, task) : best;
     }
 
     private static TimeRange? FindBestIn(EnergyProfile profile, TimeRange workday, List<TimeRange> occupied, PlannableTask task)
