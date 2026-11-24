@@ -2,12 +2,25 @@
 
 Планировщик дня с учётом биоритмов и хронотипа. Сервер: ASP.NET Core (.NET 10), EF Core, PostgreSQL. Клиент: React, TypeScript, Vite.
 
-## Запуск
+## Запуск без .NET (для фронтенда)
+
+Нужны только Docker и Node.js 22 или новее.
+
+```bash
+docker compose up -d --build      # база и API на :5244, первая сборка займёт пару минут
+cd PerfectDay_client
+npm install
+npm run dev
+```
+
+Приложение откроется на http://localhost:5173. Сервер сам применяет миграции к базе. После `git pull` с изменениями на сервере снова запустите `docker compose up -d --build`. Логи API: `docker compose logs -f api`, остановить всё: `docker compose down` (данные базы сохранятся).
+
+## Запуск для разработки сервера
 
 Нужны .NET 10 SDK, Node.js 22 или новее и Docker.
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 dotnet run --project PerfectDay_server/PerfectDay_API --launch-profile http
 ```
 
@@ -19,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Приложение откроется на http://localhost:5173. В режиме Development сервер сам применяет миграции к базе.
+Если API уже запущен в контейнере, сначала остановите его: `docker compose stop api`, иначе порт 5244 занят.
 
 ## Тесты
 

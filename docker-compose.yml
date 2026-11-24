@@ -15,5 +15,18 @@ services:
       timeout: 3s
       retries: 10
 
+  # API в контейнере, чтобы для фронтенда не ставить .NET. Тот же адрес :5244, что и у dotnet run.
+  api:
+    build: ./PerfectDay_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Development: миграции применяются при старте, берутся локальные ключи из appsettings.Development.json.
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=perfectday;Username=perfectday;Password=perfectday_dev
+    ports:
+      - "5244:8080"
+
 volumes:
   perfectday_pgdata:
